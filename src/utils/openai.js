@@ -2,7 +2,8 @@
  * OpenAI Integration for One-Pager Generation
  */
 
-import OpenAI from 'openai'
+// Removing top-level import to prevent load-time crashes
+// import OpenAI from 'openai' 
 
 const SYSTEM_PROMPT = `You are an expert marketing copywriter and one-pager designer. 
 Your task is to transform user input into a professional, persuasive one-pager structure.
@@ -45,7 +46,7 @@ export async function generateOnePager(inputData) {
   const { prompt, tone } = inputData
 
   // Get API key from environment
-  const apiKey = import.meta.env.VITE_OPENAI_API_KEY
+  const apiKey = import.meta.env.VITE_OPENAI_API_KEY || ''
 
   if (!apiKey) {
     throw new Error(
@@ -55,15 +56,19 @@ export async function generateOnePager(inputData) {
     )
   }
 
-  // Initialize OpenAI only when needed (Lazy Initialization)
-  const openai = new OpenAI({
-    apiKey: apiKey,
-    dangerouslyAllowBrowser: true
-  })
-
   try {
+    // Dynamic import to ensure the library is only loaded when needed
+    // This prevents "process is not defined" or other bundling errors on initial load
+    const { default: OpenAI } = await import('openai')
+
+    // Initialize OpenAI only when needed
+    const openai = new OpenAI({
+      apiKey: apiKey,
+      dangerouslyAllowBrowser: true // Required for client-side usage
+    })
+
     const completion = await openai.chat.completions.create({
-      model: "gpt-4-turbo-preview", // Or "gpt-4o"
+      model: "gpt-4-turbo-preview",
       messages: [
         { role: "system", content: SYSTEM_PROMPT },
         {
