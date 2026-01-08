@@ -4,11 +4,6 @@
 
 import OpenAI from 'openai'
 
-const openai = new OpenAI({
-  apiKey: import.meta.env.VITE_OPENAI_API_KEY,
-  dangerouslyAllowBrowser: true // Allowed for client-side demo; use backend for production
-})
-
 const SYSTEM_PROMPT = `You are an expert marketing copywriter and one-pager designer. 
 Your task is to transform user input into a professional, persuasive one-pager structure.
 
@@ -49,9 +44,26 @@ Guidelines:
 export async function generateOnePager(inputData) {
   const { prompt, tone } = inputData
 
+  // Get API key from environment
+  const apiKey = import.meta.env.VITE_OPENAI_API_KEY
+
+  if (!apiKey) {
+    throw new Error(
+      'OpenAI API Key is missing! \n\n' +
+      'If you are running locally, check your .env file.\n' +
+      'If you are on Vercel, go to Settings > Environment Variables and add VITE_OPENAI_API_KEY.'
+    )
+  }
+
+  // Initialize OpenAI only when needed (Lazy Initialization)
+  const openai = new OpenAI({
+    apiKey: apiKey,
+    dangerouslyAllowBrowser: true
+  })
+
   try {
     const completion = await openai.chat.completions.create({
-      model: "gpt-4-turbo-preview", // Or "gpt-4o" if available to your key
+      model: "gpt-4-turbo-preview", // Or "gpt-4o"
       messages: [
         { role: "system", content: SYSTEM_PROMPT },
         {
@@ -67,7 +79,8 @@ export async function generateOnePager(inputData) {
     return result
   } catch (error) {
     console.error('OpenAI generation failed:', error)
-    throw new Error('Failed to generate one-pager. Please check your API key and try again.')
+    // Pass precise error message to the user
+    throw new Error(error.message || 'Failed to generate one-pager.')
   }
 }
 
