@@ -149,10 +149,10 @@ html2canvas 1.4.1     - Screenshot
 jsPDF 4.0.0           - PDF generation
 ```
 
-### **AI (Optional)**
+### **AI (Enabled)**
 ```
 OpenAI SDK            - GPT-4 integration
-(Install when ready)
+(Active with User API Key)
 ```
 
 ---
